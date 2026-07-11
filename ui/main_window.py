@@ -1,11 +1,13 @@
 import cv2
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-                             QPushButton, QLabel, QListWidget, QFrame)
+                             QPushButton, QLabel, QListWidget, QFrame,
+                             QMessageBox)
 from PyQt6.QtCore import QTimer, Qt
 
 from core.vision import VisionProcessor
 from core.model import LibrasModel
 from core.translator import TranslatorEngine
+from core.data_manager import DataManager
 from ui.video_widget import VideoWidget
 from ui.training_dialog import TrainingDialog
 
@@ -40,6 +42,7 @@ class MainWindow(QMainWindow):
         self.vision = VisionProcessor()
         self.model = LibrasModel()
         self.translator = TranslatorEngine()
+        self.data_manager = DataManager()
         
         # Connect Translator Signals
         self.translator.word_updated.connect(self.update_current_word)
@@ -48,8 +51,7 @@ class MainWindow(QMainWindow):
         # Training Data Collection State
         self.is_collecting = False
         self.collect_label = ""
-        self.collected_X = []
-        self.collected_y = []
+        self.current_session_landmarks = []  # Buffer for the current collection session
 
         self.init_ui()
         
@@ -127,11 +129,10 @@ class MainWindow(QMainWindow):
         
         if landmarks:
             if self.is_collecting:
-                # Data Collection
-                self.collected_X.append(landmarks)
-                self.collected_y.append(self.collect_label)
+                # Buffer landmarks for the current session
+                self.current_session_landmarks.append(landmarks)
                 if hasattr(self, 'training_dialog') and self.training_dialog.isVisible():
-                    self.training_dialog.update_count(len(self.collected_y))
+                    self.training_dialog.update_count(len(self.current_session_landmarks))
             else:
                 # Inference
                 prediction = self.model.predict(landmarks)
@@ -162,24 +163,40 @@ class MainWindow(QMainWindow):
         )
 
     def open_training_dialog(self):
-        self.training_dialog = TrainingDialog(self)
+        self.training_dialog = TrainingDialog(self.data_manager, self)
         self.training_dialog.collect_data_signal.connect(self.set_collecting_state)
         self.training_dialog.train_model_signal.connect(self.train_model_from_data)
+        self.training_dialog.delete_session_signal.connect(self.delete_session)
         self.training_dialog.exec()
         
     def set_collecting_state(self, label, is_collecting):
+        if self.is_collecting and not is_collecting:
+            # Stopping collection: save the session
+            if self.current_session_landmarks:
+                self.data_manager.add_session(label, self.current_session_landmarks)
+                self.current_session_landmarks = []
+                if hasattr(self, 'training_dialog') and self.training_dialog.isVisible():
+                    self.training_dialog.on_session_saved()
+        elif not self.is_collecting and is_collecting:
+            # Starting a new collection: reset buffer
+            self.current_session_landmarks = []
+            
         self.collect_label = label
         self.is_collecting = is_collecting
         
     def train_model_from_data(self):
-        if len(self.collected_X) > 0:
-            self.model.train(self.collected_X, self.collected_y)
-            self.training_dialog.show_training_success()
-            # Don't clear data immediately, allows appending. 
-            # Or we can clear if we want a fresh start.
+        X, y = self.data_manager.get_aggregated_data()
+        if len(X) > 0:
+            self.model.train(X, y)
+            if hasattr(self, 'training_dialog') and self.training_dialog.isVisible():
+                self.training_dialog.show_training_success()
         else:
-            from PyQt6.QtWidgets import QMessageBox
-            QMessageBox.warning(self, "Aviso", "Nenhum dado coletado!")
+            QMessageBox.warning(self, "Aviso", "Nenhum dado coletado! Colete dados primeiro.")
+
+    def delete_session(self, session_id):
+        self.data_manager.delete_session(session_id)
+        if hasattr(self, 'training_dialog') and self.training_dialog.isVisible():
+            self.training_dialog.on_session_saved()
 
     def closeEvent(self, event):
         self.cap.release()
