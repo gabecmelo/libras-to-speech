@@ -18,8 +18,8 @@ class TrainingDialog(QDialog):
         layout.addWidget(info_label)
         
         self.combo = QComboBox()
-        # Add A-Z, ESPAÇO, APAGAR
-        gestures = [chr(i) for i in range(ord('A'), ord('Z')+1)] + ["ESPAÇO", "APAGAR"]
+        # Add A-Z, ESPAÇO, ENTER, APAGAR
+        gestures = [chr(i) for i in range(ord('A'), ord('Z')+1)] + ["ESPAÇO", "ENTER", "APAGAR"]
         self.combo.addItems(gestures)
         layout.addWidget(self.combo)
         

@@ -32,12 +32,17 @@ class TranslatorEngine(QObject):
             self._handle_confirmed_prediction(prediction)
 
     def _handle_confirmed_prediction(self, letter):
-        if letter == "ESPAÇO":
-            if self.current_word:
-                self.history.append(self.current_word)
+        if letter == "ENTER":
+            if self.current_word.strip():
+                sentence = self.current_word.strip()
+                self.history.append(sentence)
                 self.history_updated.emit(self.history)
-                self.tts.speak(self.current_word)
+                self.tts.speak(sentence)
                 self.current_word = ""
+                self.word_updated.emit(self.current_word)
+        elif letter == "ESPAÇO":
+            if self.current_word and not self.current_word.endswith(" "):
+                self.current_word += " "
                 self.word_updated.emit(self.current_word)
         elif letter == "APAGAR":
             if len(self.current_word) > 0:
