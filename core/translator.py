@@ -20,6 +20,7 @@ class TranslatorEngine(QObject):
             
         self.current_word = ""  # This stores the active raw sentence/word builder
         self.history = []
+        self.undo_stack = []    # Stack to keep previous states for APAGAR undo
         
         # Sliding Window for fast, robust voting
         self.window_size = 10
@@ -30,6 +31,7 @@ class TranslatorEngine(QObject):
         self.no_hand_counter = 0
         self.no_hand_threshold = 15  # Reset confirmed letter if hand is absent for ~0.5s
         
+        self.repeat_counter = 0 # Counter for APAGAR auto-repeat
         self.is_paused = False
         
     def process_prediction(self, prediction):
@@ -42,6 +44,7 @@ class TranslatorEngine(QObject):
             if self.no_hand_counter >= self.no_hand_threshold:
                 self.prediction_window.clear()
                 self.last_confirmed = None
+                self.repeat_counter = 0
             return
             
         # Hand is present
@@ -62,9 +65,17 @@ class TranslatorEngine(QObject):
             if frequency >= 7:
                 if most_frequent != self.last_confirmed:
                     self.last_confirmed = most_frequent
+                    self.repeat_counter = 0
                     self._handle_confirmed_prediction(most_frequent)
                     # Clear window to avoid double triggers without a gesture change
                     self.prediction_window.clear()
+                else:
+                    # Auto-repeat for APAGAR
+                    if most_frequent == "APAGAR":
+                        self.repeat_counter += 1
+                        if self.repeat_counter >= 10:  # Repeat roughly every 0.33s
+                            self.repeat_counter = 0
+                            self._handle_confirmed_prediction("APAGAR")
 
     def _autocorrect_word(self, word):
         """Fixes the spelling of a single Portuguese word using pyspellchecker."""
@@ -104,10 +115,12 @@ class TranslatorEngine(QObject):
                 self.tts.speak(corrected_sentence)
                 
                 self.current_word = ""
+                self.undo_stack.clear()
                 self.word_updated.emit(self.current_word)
                 
         elif letter == "ESPAÇO":
             if self.current_word and not self.current_word.endswith(" "):
+                self.undo_stack.append(self.current_word)
                 # Autocorrect the last typed word when space is pressed
                 words = self.current_word.split(" ")
                 if words:
@@ -120,19 +133,23 @@ class TranslatorEngine(QObject):
                 self.word_updated.emit(self.current_word)
                 
         elif letter == "APAGAR":
-            if len(self.current_word) > 0:
-                # If it ends with space, just remove space, otherwise remove last char
+            if self.undo_stack:
+                self.current_word = self.undo_stack.pop()
+                self.word_updated.emit(self.current_word)
+            elif len(self.current_word) > 0:
                 self.current_word = self.current_word[:-1]
                 self.word_updated.emit(self.current_word)
                 
         else:
             # Regular letter
+            self.undo_stack.append(self.current_word)
             self.current_word += letter
             self.word_updated.emit(self.current_word)
             
     def clear_history(self):
         self.history.clear()
         self.current_word = ""
+        self.undo_stack.clear()
         self.word_updated.emit(self.current_word)
         self.history_updated.emit(self.history)
         
