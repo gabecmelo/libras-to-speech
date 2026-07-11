@@ -127,6 +127,7 @@ class MainWindow(QMainWindow):
         # Draw current prediction on screen
         current_pred = "Nenhum"
         
+        prediction = None
         if landmarks:
             if self.is_collecting:
                 # Buffer landmarks for the current session
@@ -138,7 +139,10 @@ class MainWindow(QMainWindow):
                 prediction = self.model.predict(landmarks)
                 if prediction:
                     current_pred = prediction
-                self.translator.process_prediction(prediction)
+        
+        # Always feed prediction (could be None) to translator when not collecting data
+        if not self.is_collecting:
+            self.translator.process_prediction(prediction)
         
         # Draw info
         cv2.putText(annotated_frame, f"Sinal: {current_pred}", (10, 30), 
