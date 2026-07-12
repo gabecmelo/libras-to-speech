@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Crie um relato de erro para nos ajudar a melhorar o libras-live
+about: Crie um relato de erro para nos ajudar a melhorar o libras-to-speech
 title: '[BUG] '
 labels: bug
 assignees: ''

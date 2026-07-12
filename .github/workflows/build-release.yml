@@ -29,14 +29,14 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --noconfirm --onedir --windowed --name "libras-live" --collect-all mediapipe --collect-all sklearn --collect-data spellchecker --hidden-import pyttsx3.drivers --hidden-import pyttsx3.drivers.sapi5 main.py
+          pyinstaller --noconfirm --onedir --windowed --name "libras-to-speech" --collect-all mediapipe --collect-all sklearn --collect-data spellchecker --hidden-import pyttsx3.drivers --hidden-import pyttsx3.drivers.sapi5 main.py
 
       - name: Zip the build
         run: |
-          Compress-Archive -Path dist/libras-live -DestinationPath libras-live-windows.zip
+          Compress-Archive -Path dist/libras-to-speech -DestinationPath libras-to-speech-windows.zip
 
       - name: Create Release and Upload Asset
         uses: softprops/action-gh-release@v2
         with:
-          files: libras-live-windows.zip
+          files: libras-to-speech-windows.zip
           generate_release_notes: true
