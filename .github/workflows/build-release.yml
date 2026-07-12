@@ -29,7 +29,7 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --noconfirm --onedir --windowed --name "libras-to-speech" --collect-all mediapipe --collect-all sklearn --collect-data spellchecker --hidden-import pyttsx3.drivers --hidden-import pyttsx3.drivers.sapi5 --exclude-module jax --exclude-module jaxlib --exclude-module matplotlib --exclude-module IPython --exclude-module PyQt6.QtWebEngineCore --exclude-module PyQt6.QtWebEngine --exclude-module PyQt6.QtQml main.py
+          pyinstaller --noconfirm --onedir --windowed --name "libras-to-speech" --collect-all mediapipe --collect-all sklearn --collect-data spellchecker --hidden-import pyttsx3.drivers --hidden-import pyttsx3.drivers.sapi5 --exclude-module jax --exclude-module jaxlib --exclude-module PyQt6.QtWebEngineCore --exclude-module PyQt6.QtWebEngine --exclude-module PyQt6.QtQml main.py
 
       - name: Zip the build
         run: |
