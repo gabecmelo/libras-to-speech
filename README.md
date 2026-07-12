@@ -40,7 +40,7 @@ Um aplicativo desktop open-source desenvolvido em Python para traduzir o alfabet
    - Mexa a mão suavemente para capturar diferentes ângulos por alguns segundos, e então clique em **Parar Coleta**.
    - Repita para outras letras que desejar treinar.
    - Ao final, clique em **Treinar e Salvar Modelo**. O programa treinará a IA baseada nas suas fotos e salvará em `libras_model.pkl`.
-5. Agora basta fazer os sinais para a câmera no painel inicial. O programa irá formar a palavra. Para finalizar uma palavra e ouvi-la (TTS), faça o sinal ensinado como **ESPAÇO**.
+5. Agora basta fazer os sinais para a câmera no painel inicial. O programa irá formar a palavra. Para finalizar uma palavra e ouvi-la (TTS), faça o sinal ensinado como **ENTER**.
 
 ## Arquitetura e Tecnologias
 - **UI:** PyQt6

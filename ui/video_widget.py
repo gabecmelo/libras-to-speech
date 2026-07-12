@@ -14,13 +14,11 @@ class VideoWidget(QLabel):
         """Updates the image_label with a new opencv image"""
         h, w, ch = cv_img.shape
         bytes_per_line = ch * w
-        # Convert from BGR to RGB
         cv_img_rgb = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
         
         qt_img = QImage(cv_img_rgb.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
         pixmap = QPixmap.fromImage(qt_img)
         
-        # Scale pixmap to fit the label, keeping aspect ratio
         scaled_pixmap = pixmap.scaled(
             self.width(), self.height(),
             Qt.AspectRatioMode.KeepAspectRatio,

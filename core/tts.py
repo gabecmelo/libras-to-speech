@@ -4,7 +4,6 @@ from PyQt6.QtCore import QThread, pyqtSignal
 def _find_portuguese_voice(engine):
     """Search for a Brazilian Portuguese voice across SAPI5 voice properties."""
     voices = engine.getProperty('voices')
-    # Priority: pt-BR first, then any Portuguese
     for voice in voices:
         voice_id_lower = voice.id.lower()
         voice_name_lower = voice.name.lower()
@@ -40,7 +39,6 @@ class TTSEngine:
 
     def speak(self, text):
         if self.worker is not None and self.worker.isRunning():
-            # If already speaking, skip to avoid overlap
             pass
         self.worker = TTSWorker(text)
         self.worker.start()

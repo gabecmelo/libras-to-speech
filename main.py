@@ -4,8 +4,6 @@ from ui.main_window import MainWindow
 
 def main():
     app = QApplication(sys.argv)
-    
-    # Set global application properties
     app.setApplicationName("LIBRAS to Speech")
     
     window = MainWindow()

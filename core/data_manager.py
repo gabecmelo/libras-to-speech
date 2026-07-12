@@ -13,7 +13,7 @@ class TrainingSession:
         self.label = label
         self.timestamp = timestamp
         self.frame_count = frame_count
-        self.landmarks = landmarks  # list of landmark lists
+        self.landmarks = landmarks
 
     def to_dict(self):
         return {

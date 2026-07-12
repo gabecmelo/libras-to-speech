@@ -32,17 +32,13 @@ class LibrasModel:
         if self.model is None:
             return None
             
-        # Reshape for a single sample
         X_infer = np.array(landmarks).reshape(1, -1)
         
-        # Predict class
         prediction = self.model.predict(X_infer)[0]
         
-        # Get probability
         probs = self.model.predict_proba(X_infer)[0]
         max_prob = np.max(probs)
         
-        # Return prediction if confidence is reasonable
         if max_prob > 0.5:
             return prediction
         return None

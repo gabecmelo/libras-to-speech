@@ -6,10 +6,9 @@ from PyQt6.QtCore import pyqtSignal, Qt
 
 
 class TrainingDialog(QDialog):
-    # Signals: letter to collect, boolean indicating to start/stop
     collect_data_signal = pyqtSignal(str, bool)
     train_model_signal = pyqtSignal()
-    delete_session_signal = pyqtSignal(str)  # session_id
+    delete_session_signal = pyqtSignal(str)
 
     def __init__(self, data_manager, parent=None):
         super().__init__(parent)
@@ -62,10 +61,8 @@ class TrainingDialog(QDialog):
 
         main_layout = QVBoxLayout()
 
-        # Tabs
         self.tabs = QTabWidget()
-
-        # --- Tab 1: Coleta ---
+        
         collect_tab = QWidget()
         collect_layout = QVBoxLayout(collect_tab)
 
@@ -87,8 +84,7 @@ class TrainingDialog(QDialog):
 
         self.lbl_status = QLabel("Aguardando...")
         collect_layout.addWidget(self.lbl_status)
-
-        # Summary of total frames per label
+        
         self.lbl_summary = QLabel("")
         collect_layout.addWidget(self.lbl_summary)
         self._refresh_summary()
@@ -98,8 +94,7 @@ class TrainingDialog(QDialog):
         collect_layout.addWidget(self.btn_train)
 
         self.tabs.addTab(collect_tab, "Coletar Dados")
-
-        # --- Tab 2: Histórico ---
+        
         history_tab = QWidget()
         history_layout = QVBoxLayout(history_tab)
 
@@ -149,7 +144,6 @@ class TrainingDialog(QDialog):
         self.lbl_status.setText(f"Coletando: {self.combo.currentText()} - Frames: {count}")
 
     def train_model(self):
-        # Stop collecting if we were
         if self.btn_collect.isChecked():
             self.btn_collect.click()
 

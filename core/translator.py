@@ -18,20 +18,19 @@ class TranslatorEngine(QObject):
             # Fallback if dictionary cannot be loaded offline
             self.spell = None
             
-        self.current_word = ""  # This stores the active raw sentence/word builder
+        self.current_word = ""
         self.history = []
-        self.undo_stack = []    # Stack to keep previous states for APAGAR undo
+        self.undo_stack = []
         
         # Sliding Window for fast, robust voting
         self.window_size = 10
         self.prediction_window = deque(maxlen=self.window_size)
         self.last_confirmed = None
         
-        # Hand presence tracking
         self.no_hand_counter = 0
-        self.no_hand_threshold = 15  # Reset confirmed letter if hand is absent for ~0.5s
+        self.no_hand_threshold = 15
         
-        self.repeat_counter = 0 # Counter for APAGAR auto-repeat
+        self.repeat_counter = 0
         self.is_paused = False
         
     def process_prediction(self, prediction):
@@ -39,7 +38,6 @@ class TranslatorEngine(QObject):
             return
             
         if prediction is None:
-            # Hand is absent
             self.no_hand_counter += 1
             if self.no_hand_counter >= self.no_hand_threshold:
                 self.prediction_window.clear()
@@ -47,13 +45,10 @@ class TranslatorEngine(QObject):
                 self.repeat_counter = 0
             return
             
-        # Hand is present
         self.no_hand_counter = 0
         self.prediction_window.append(prediction)
         
-        # Perform majority voting when window is full
         if len(self.prediction_window) == self.window_size:
-            # Find the most frequent prediction in the window
             counts = {}
             for item in self.prediction_window:
                 counts[item] = counts.get(item, 0) + 1
@@ -61,39 +56,31 @@ class TranslatorEngine(QObject):
             most_frequent = max(counts, key=counts.get)
             frequency = counts[most_frequent]
             
-            # Require at least 70% confidence in the window to trigger
             if frequency >= 7:
                 if most_frequent != self.last_confirmed:
                     self.last_confirmed = most_frequent
                     self.repeat_counter = 0
                     self._handle_confirmed_prediction(most_frequent)
-                    # Clear window to avoid double triggers without a gesture change
                     self.prediction_window.clear()
                 else:
-                    # Auto-repeat for APAGAR
                     if most_frequent == "APAGAR":
                         self.repeat_counter += 1
-                        if self.repeat_counter >= 10:  # Repeat roughly every 0.33s
+                        if self.repeat_counter >= 10:
                             self.repeat_counter = 0
                             self._handle_confirmed_prediction("APAGAR")
 
     def _autocorrect_word(self, word):
-        """Fixes the spelling of a single Portuguese word using pyspellchecker."""
         if not self.spell or not word.isalpha():
             return word
             
-        # Ignore very short words (like "oi", "vc", "eu") to prevent false positives
-        if len(word) <= 3:
+        if len(word) <= 2:
             return word
         
-        # If it's already considered correct, keep it
-        # Otherwise, find the best correction
         word_lower = word.lower()
         misspelled = self.spell.unknown([word_lower])
         if misspelled:
             correction = self.spell.correction(word_lower)
             if correction:
-                # Match original capitalization case
                 if word.isupper():
                     return correction.upper()
                 elif word[0].isupper():
@@ -110,7 +97,6 @@ class TranslatorEngine(QObject):
     def _handle_confirmed_prediction(self, letter):
         if letter == "ENTER":
             if self.current_word.strip():
-                # Correct the entire sentence before final TTS and history append
                 raw_sentence = self.current_word.strip()
                 corrected_sentence = self._autocorrect_sentence(raw_sentence)
                 
@@ -125,7 +111,6 @@ class TranslatorEngine(QObject):
         elif letter == "ESPAÇO":
             if self.current_word and not self.current_word.endswith(" "):
                 self.undo_stack.append(self.current_word)
-                # Autocorrect the last typed word when space is pressed
                 words = self.current_word.split(" ")
                 if words:
                     last_word = words[-1]
@@ -145,7 +130,6 @@ class TranslatorEngine(QObject):
                 self.word_updated.emit(self.current_word)
                 
         else:
-            # Regular letter
             self.undo_stack.append(self.current_word)
             self.current_word += letter
             self.word_updated.emit(self.current_word)

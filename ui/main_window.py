@@ -38,45 +38,38 @@ class MainWindow(QMainWindow):
             }
         """)
 
-        # Core Components
         self.vision = VisionProcessor()
         self.model = LibrasModel()
         self.translator = TranslatorEngine()
         self.data_manager = DataManager()
         
-        # Connect Translator Signals
         self.translator.word_updated.connect(self.update_current_word)
         self.translator.history_updated.connect(self.update_history)
         
-        # Training Data Collection State
         self.is_collecting = False
         self.collect_label = ""
-        self.current_session_landmarks = []  # Buffer for the current collection session
+        self.current_session_landmarks = []
 
         self.init_ui()
         
-        # Camera Setup
         self.cap = cv2.VideoCapture(0)
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_frame)
-        self.timer.start(30) # ~33 fps
+        self.timer.start(30)
 
     def init_ui(self):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QHBoxLayout(central_widget)
         
-        # Left Panel - Video
         left_panel = QVBoxLayout()
         self.video_widget = VideoWidget()
         left_panel.addWidget(self.video_widget, stretch=1)
         
-        # Current translation overlay/label
         self.lbl_current_word = QLabel("Palavra atual: ")
         self.lbl_current_word.setStyleSheet("font-size: 24px; font-weight: bold; color: #4CAF50;")
         left_panel.addWidget(self.lbl_current_word)
         
-        # Right Panel - Controls & History
         right_panel = QVBoxLayout()
         right_panel.setContentsMargins(10, 0, 0, 0)
         
@@ -87,7 +80,6 @@ class MainWindow(QMainWindow):
         self.list_history = QListWidget()
         right_panel.addWidget(self.list_history)
         
-        # Buttons
         self.btn_pause = QPushButton("Pausar Tradução")
         self.btn_pause.clicked.connect(self.toggle_pause)
         right_panel.addWidget(self.btn_pause)
@@ -100,7 +92,6 @@ class MainWindow(QMainWindow):
         self.btn_replay.clicked.connect(self.translator.replay_last)
         right_panel.addWidget(self.btn_replay)
         
-        # Separator
         line = QFrame()
         line.setFrameShape(QFrame.Shape.HLine)
         line.setFrameShadow(QFrame.Shadow.Sunken)
@@ -111,7 +102,6 @@ class MainWindow(QMainWindow):
         self.btn_train.clicked.connect(self.open_training_dialog)
         right_panel.addWidget(self.btn_train)
         
-        # Add panels to main layout
         main_layout.addLayout(left_panel, stretch=7)
         main_layout.addLayout(right_panel, stretch=3)
 
@@ -120,31 +110,26 @@ class MainWindow(QMainWindow):
         if not ret:
             return
             
-        frame = cv2.flip(frame, 1) # Mirror
+        frame = cv2.flip(frame, 1)
         
         annotated_frame, landmarks = self.vision.process_frame(frame)
         
-        # Draw current prediction on screen
         current_pred = "Nenhum"
-        
         prediction = None
+        
         if landmarks:
             if self.is_collecting:
-                # Buffer landmarks for the current session
                 self.current_session_landmarks.append(landmarks)
                 if hasattr(self, 'training_dialog') and self.training_dialog.isVisible():
                     self.training_dialog.update_count(len(self.current_session_landmarks))
             else:
-                # Inference
                 prediction = self.model.predict(landmarks)
                 if prediction:
                     current_pred = prediction
         
-        # Always feed prediction (could be None) to translator when not collecting data
         if not self.is_collecting:
             self.translator.process_prediction(prediction)
         
-        # Draw info
         cv2.putText(annotated_frame, f"Sinal: {current_pred}", (10, 30), 
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
                     
@@ -175,14 +160,12 @@ class MainWindow(QMainWindow):
         
     def set_collecting_state(self, label, is_collecting):
         if self.is_collecting and not is_collecting:
-            # Stopping collection: save the session
             if self.current_session_landmarks:
                 self.data_manager.add_session(label, self.current_session_landmarks)
                 self.current_session_landmarks = []
                 if hasattr(self, 'training_dialog') and self.training_dialog.isVisible():
                     self.training_dialog.on_session_saved()
         elif not self.is_collecting and is_collecting:
-            # Starting a new collection: reset buffer
             self.current_session_landmarks = []
             
         self.collect_label = label
