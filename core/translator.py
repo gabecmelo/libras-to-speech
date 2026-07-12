@@ -81,6 +81,10 @@ class TranslatorEngine(QObject):
         """Fixes the spelling of a single Portuguese word using pyspellchecker."""
         if not self.spell or not word.isalpha():
             return word
+            
+        # Ignore very short words (like "oi", "vc", "eu") to prevent false positives
+        if len(word) <= 3:
+            return word
         
         # If it's already considered correct, keep it
         # Otherwise, find the best correction
