@@ -8,6 +8,7 @@ class VideoWidget(QLabel):
         super().__init__()
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.setMinimumSize(640, 480)
         self.setStyleSheet("background-color: black;")
         
     def update_frame(self, cv_img):
