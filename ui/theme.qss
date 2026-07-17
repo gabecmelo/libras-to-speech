@@ -1,0 +1,106 @@
+/* Global */
+QWidget {
+    background-color: #0E1113;
+    color: #E7ECEE;
+    font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+    font-size: 14px;
+}
+
+/* Scrollbars */
+QScrollBar:vertical {
+    border: none;
+    background: transparent;
+    width: 8px;
+    margin: 0px 0px 0px 0px;
+}
+QScrollBar::handle:vertical {
+    background: #2A3136;
+    min-height: 20px;
+    border-radius: 4px;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+/* Cards & Panels */
+QFrame#Card {
+    background-color: #15191C;
+    border: 1px solid #21272B;
+    border-radius: 12px;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: transparent;
+    color: #8B959B;
+    border: 1px solid #2A3136;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+QPushButton:hover {
+    border-color: #3A444B;
+    color: #E7ECEE;
+}
+QPushButton#PrimaryButton {
+    background-color: #4CC38A;
+    color: #0E1113;
+    border: none;
+    font-weight: bold;
+}
+QPushButton#PrimaryButton:hover {
+    background-color: #6FD8A6;
+}
+
+/* Sidebar */
+QFrame#Sidebar {
+    background-color: #0E1113;
+    border-right: 1px solid #21272B;
+}
+QPushButton#SidebarButton {
+    text-align: left;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 8px;
+    color: #8B959B;
+    font-weight: 500;
+}
+QPushButton#SidebarButton:hover {
+    background-color: #1C2226;
+    color: #E7ECEE;
+}
+QPushButton#SidebarButton:checked {
+    background-color: #1C2226;
+    color: #4CC38A;
+}
+
+/* Inputs & Comboboxes */
+QLineEdit, QComboBox {
+    background-color: #0E1113;
+    border: 1px solid #2A3136;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #E7ECEE;
+}
+QLineEdit:focus, QComboBox:focus {
+    border-color: #4CC38A;
+}
+QComboBox::drop-down {
+    border: none;
+}
+QComboBox QAbstractItemView {
+    background-color: #15191C;
+    border: 1px solid #2A3136;
+    selection-background-color: #1C2226;
+}
+
+/* Labels */
+QLabel#Title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #E7ECEE;
+}
+QLabel#Subtitle {
+    font-size: 13px;
+    color: #8B959B;
+}
