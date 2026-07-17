@@ -3,6 +3,7 @@ import socketserver
 import os
 import json
 import threading
+from functools import partial
 
 class OBSServerThread(threading.Thread):
     def __init__(self, port=8080):
@@ -15,8 +16,7 @@ class OBSServerThread(threading.Thread):
         self.update_state([])
 
     def run(self):
-        os.chdir(self.overlay_dir)
-        handler = http.server.SimpleHTTPRequestHandler
+        handler = partial(http.server.SimpleHTTPRequestHandler, directory=self.overlay_dir)
         
         while True:
             try:

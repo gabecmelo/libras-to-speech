@@ -144,10 +144,14 @@ class TrainingWidget(QWidget):
         self.video_widget.setStyleSheet("background-color: #101417; border: 1px solid #21272B; border-radius: 12px;")
         video_layout.addWidget(self.video_widget, stretch=1)
         
-        self.btn_record = QPushButton("Gravar Amostra (Desabilitado)")
+        self.btn_record = QPushButton("Gravar Amostra")
         self.btn_record.setObjectName("PrimaryButton")
-        self.btn_record.setEnabled(False)
         video_layout.addWidget(self.btn_record)
+        
+        self.lbl_status = QLabel("Pronto para gravar.")
+        self.lbl_status.setStyleSheet("color: #4CC38A; font-weight: bold;")
+        video_layout.addWidget(self.lbl_status)
+        
         content_layout.addLayout(video_layout, stretch=7)
         
         form_layout = QVBoxLayout()
@@ -205,6 +209,7 @@ class TrainingWidget(QWidget):
             self.current_session_landmarks = []
             self.btn_record.setText("Parar Gravação")
             self.btn_record.setStyleSheet("background-color: #E5484D; border: none; color: white;")
+            self.lbl_status.setText("Capturando frames: 0")
         else:
             self.btn_record.setText("Gravar Amostra")
             self.btn_record.setStyleSheet("")
@@ -212,19 +217,22 @@ class TrainingWidget(QWidget):
             if self.current_session_landmarks:
                 self.main_window.data_manager.add_session(sign_name, self.current_session_landmarks)
                 self._refresh_table()
-                QMessageBox.information(self, "Coleta", f"Amostra salva com {len(self.current_session_landmarks)} frames.")
+                self.lbl_status.setText(f"Sessão salva com {len(self.current_session_landmarks)} frames.")
                 
     def save_sign(self):
+        self.lbl_status.setText("Treinando modelo, aguarde...")
+        self.main_window.repaint() # Force UI update before blocking training
         X, y = self.main_window.data_manager.get_aggregated_data()
         if len(X) > 0:
             self.main_window.model.train(X, y)
-            QMessageBox.information(self, "Sucesso", "Modelo retreinado com as sessões ativas.")
+            self.lbl_status.setText("Modelo treinado com sucesso!")
         else:
-            QMessageBox.warning(self, "Erro", "Nenhum dado coletado para treinar.")
+            self.lbl_status.setText("Erro: Nenhum dado coletado para treinar.")
         
     def update_frame(self, cv_img, landmarks):
         if self.is_collecting and landmarks:
             self.current_session_landmarks.append(landmarks)
+            self.lbl_status.setText(f"Capturando frames: {len(self.current_session_landmarks)}")
         self.video_widget.update_frame(cv_img)
 
 

@@ -4,8 +4,9 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
 class LibrasModel:
-    def __init__(self, model_path="libras_model.pkl"):
-        self.model_path = model_path
+    def __init__(self, model_filename="libras_model.pkl"):
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.model_path = os.path.join(base_dir, model_filename)
         self.model = None
         self.load_model()
         
